@@ -1,0 +1,36 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "eu.ansvar/bulgarian-financial-regulation-mcp",
+  "description": "Query Bulgarian FSC (КФН) ordinances, BNB regulations, and enforcement actions",
+  "repository": {
+    "url": "https://github.com/Ansvar-Systems/bulgarian-financial-regulation-mcp",
+    "source": "github"
+  },
+  "homepage": "https://ansvar.eu",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "keywords": [
+    "fsc",
+    "kfn",
+    "bnb",
+    "bulgarian-financial-regulation",
+    "capital-markets",
+    "insurance",
+    "investment-funds",
+    "compliance",
+    "enforcement",
+    "mcp",
+    "ansvar",
+    "bulgaria"
+  ],
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@ansvar/bulgarian-financial-regulation-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
