@@ -15,7 +15,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
@@ -150,6 +150,26 @@ const TOOLS = [
       required: [],
     },
   },
+  {
+    name: "bg_fin_list_sources",
+    description:
+      "List all authoritative data sources used by this MCP server, with authority, URL, language, and licence information.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "bg_fin_check_data_freshness",
+    description:
+      "Return data freshness information: last ingestion timestamp, provision count, enforcement action count, and overall status.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
 ];
 
 // Zod schemas
@@ -178,10 +198,22 @@ const CheckCurrencyArgs = z.object({
 
 // Helper
 
+const _meta = {
+  disclaimer:
+    "This data is sourced from official Bulgarian regulatory publications and is provided for research purposes only. Not legal or regulatory advice. Verify all references against primary sources before making compliance decisions.",
+  copyright: "© Financial Supervision Commission (FSC / КФН), Republic of Bulgaria",
+  source_url: "https://www.fsc.bg/",
+  data_age: "Periodic updates — see bg_fin_check_data_freshness for last ingestion timestamp.",
+};
+
 function textContent(data: unknown) {
+  const payload =
+    data !== null && typeof data === "object" && !Array.isArray(data)
+      ? { ...(data as Record<string, unknown>), _meta }
+      : { data, _meta };
   return {
     content: [
-      { type: "text" as const, text: JSON.stringify(data, null, 2) },
+      { type: "text" as const, text: JSON.stringify(payload, null, 2) },
     ],
   };
 }
@@ -260,6 +292,70 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             "Bulgarian Financial Supervision Commission (FSC / КФН) MCP server. Provides access to FSC ordinances (наредби), instructions (указания), BNB regulations, and enforcement actions.",
           data_source: "FSC (https://www.fsc.bg/) and BNB (https://www.bnb.bg/)",
           tools: TOOLS.map((t) => ({ name: t.name, description: t.description })),
+        });
+      }
+
+      case "bg_fin_list_sources": {
+        return textContent({
+          sources: [
+            {
+              id: "FSC_NAREDBI",
+              authority: "Financial Supervision Commission (FSC / КФН)",
+              name: "FSC Ordinances (Наредби)",
+              url: "https://www.fsc.bg/en/regulations/ordinances/",
+              language: ["bg", "en"],
+              license: "Public domain — official government publication",
+            },
+            {
+              id: "FSC_UKAZANIYA",
+              authority: "Financial Supervision Commission (FSC / КФН)",
+              name: "FSC Instructions (Указания)",
+              url: "https://www.fsc.bg/en/regulations/instructions/",
+              language: ["bg"],
+              license: "Public domain — official government publication",
+            },
+            {
+              id: "BNB_NAREDBI",
+              authority: "Bulgarian National Bank (BNB / БНБ)",
+              name: "BNB Ordinances (Наредби)",
+              url: "https://www.bnb.bg/BankSupervision/BSRegulation/BSROrdinances/index.htm",
+              language: ["bg", "en"],
+              license: "Public domain — official government publication",
+            },
+            {
+              id: "FSC_ENFORCEMENT",
+              authority: "Financial Supervision Commission (FSC / КФН)",
+              name: "FSC Enforcement Actions",
+              url: "https://www.fsc.bg/en/compulsory-administrative-measures-and-penal-decrees/",
+              language: ["bg"],
+              license: "Public domain — official government publication",
+            },
+          ],
+          count: 4,
+        });
+      }
+
+      case "bg_fin_check_data_freshness": {
+        const ingestStatePath = join(__dirname, "..", "data", "ingest-state.json");
+        if (!existsSync(ingestStatePath)) {
+          return textContent({
+            status: "unknown",
+            message: "ingest-state.json not found",
+            last_updated: null,
+            provisions_count: null,
+            enforcements_count: null,
+          });
+        }
+        const state = JSON.parse(readFileSync(ingestStatePath, "utf8")) as {
+          lastRun?: string;
+          provisionsIngested?: number;
+          enforcementsIngested?: number;
+        };
+        return textContent({
+          last_updated: state.lastRun ?? null,
+          provisions_count: state.provisionsIngested ?? 0,
+          enforcements_count: state.enforcementsIngested ?? 0,
+          status: state.lastRun ? "ok" : "unknown",
         });
       }
 

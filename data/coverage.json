@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-03-23T15:05:04.245Z",
+  "provisions_ingested": 9,
+  "enforcements_ingested": 0,
+  "sourcebooks": [
+    {
+      "id": "FSC_NAREDBI",
+      "name": "FSC Ordinances (Наредби)",
+      "status": "partial",
+      "provisions_count": 9,
+      "notes": "Partial coverage — investment and insurance ordinances ingested, others pending"
+    },
+    {
+      "id": "FSC_UKAZANIYA",
+      "name": "FSC Instructions (Указания)",
+      "status": "not_ingested",
+      "provisions_count": 0,
+      "notes": "Not yet crawled"
+    },
+    {
+      "id": "BNB_NAREDBI",
+      "name": "BNB Ordinances (Наредби)",
+      "status": "not_ingested",
+      "provisions_count": 0,
+      "notes": "Not yet crawled"
+    },
+    {
+      "id": "FSC_ENFORCEMENT",
+      "name": "FSC Enforcement Actions",
+      "status": "zero_results",
+      "provisions_count": 0,
+      "notes": "22 URLs crawled, 0 records parsed — dynamic table format not yet supported"
+    }
+  ]
+}
